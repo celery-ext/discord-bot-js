@@ -2,6 +2,7 @@ const client = require('./core/client');
 const { token } = require('./core/config');
 
 // events
+require('./events/command')(client);
 require('./events/ready')(client);
 
 // login
