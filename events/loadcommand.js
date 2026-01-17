@@ -9,11 +9,11 @@ module.exports = (client) => {
     client.once(Events.InteractionCreate, async interaction => {
         if (!interaction.isCommand()) return;
 
-        const command = command.getLoadCommands().get(interaction.commandName);  // mapの方が欲しい
-        if (!command) return;
+        const callcommand = command.getLoadCommands().get(interaction.commandName);  // mapの方が欲しい
+        if (!callcommand) return;
 
         try {
-            await command.execute(interaction);
+            await callcommand.execute(interaction);
         } catch (error) {
             console.error(error);
             await interaction.reply({ content: 'エラーが発生しました。', ephemeral: true });
