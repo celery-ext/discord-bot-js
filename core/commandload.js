@@ -66,16 +66,16 @@ class Commands {
     getRegistCommands() {
         return this.#registCommands;    //サーバー登録用
     }
-    getloadCommands() {
+    getLoadCommands() {
         return this.#loadCommands;      //bot登録用
     }
 }
 
-async function registercommands(client, commands, guildId){
+async function registercommands(token, applicationId, guildId, commands){
     try{
-        const rest = new REST({ version: '10' }).setToken(client.token);
+        const rest = new REST({ version: '10' }).setToken(token);
         await rest.put(
-            Routes.applicationGuildCommands(client.applicationId, guildId),
+            Routes.applicationGuildCommands(applicationId, guildId),
             { body: commands },
         );
         console.log('コマンドの登録に成功しました。');
@@ -84,3 +84,5 @@ async function registercommands(client, commands, guildId){
     }
 
 }
+
+module.exports = { Command, Commands, registercommands };
