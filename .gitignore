@@ -3,7 +3,7 @@ node_modules/
 
 # environment variables
 .env
-
+test.js
 # logs
 npm-debug.log*
 yarn-debug.log*

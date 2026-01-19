@@ -1,7 +1,15 @@
-const { Commands,registercommands } = require('../core/commandload');
+const { Commands,Commandregister  } = require('../core/commandload');
 const command = new Commands('../commands');
-const { Token, ApplicationId, GuildId }= require('../core/config');
-registercommands(Token, ApplicationId, GuildId, command.getRegistCommands());
+const serverdata = require('../core/data.json');
+
+function registallguildcommands(){
+    for (const guildId of Object.keys(serverdata)) {
+        new Commandregister(guildId);
+    }
+}
+
+registallguildcommands();
+
 
 module.exports = (client) => {
     const { Events } = require('discord.js');
