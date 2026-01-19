@@ -14,15 +14,12 @@ class Commands {
     #readCommands
     #registCommands
     #loadCommands
-
     constructor(directorypath) {
-
         const commandsDir = path.resolve(__dirname, directorypath); // 絶対パス化
         const commandFiles = fs.readdirSync(commandsDir).filter(file => file.endsWith('.js'));
         this.#readCommands = this.builtreadcommands(commandsDir, commandFiles);
         this.#registCommands = this.builtregistcommands(this.#readCommands);    //サーバー登録用
         this.#loadCommands = this.builtloadcommands(this.#readCommands);    //bot登録用
-
     }
 
     builtreadcommands(commandsDir, commandFiles) {
