@@ -69,8 +69,6 @@ class Commands {
 }
 
 const { Token, ApplicationId } = require('./config');
-const serverdata = require('./data.json');
-const commandinstance = new Commands('../commands');
 
 class Commandregister {
     #guildid
@@ -81,11 +79,12 @@ class Commandregister {
         this.#guildid = Guildid;
         this.#token = Token;
         this.#applicationid = ApplicationId;
-        this.#allcommands = commandinstance.getRegistCommands();    //受け取ってるのはjson
-        this.registercommands(this.commandsfilltering());
+        this.#allcommands = new Commands('../commands').getRegistCommands();    //受け取ってるのはjson
+        const serverdata = JSON.parse(fs.readFileSync(path.join(__dirname,'./data.json'),'utf-8'));
+        this.registercommands(this.commandsfilltering(serverdata));
     }
 
-    commandsfilltering() { 
+    commandsfilltering(serverdata) { 
         if (!serverdata[this.#guildid]||serverdata[this.#guildid].commandconfig == false) return this.#allcommands;
         const serverconfig = serverdata[this.#guildid].commands;
         const setcommands = []; 

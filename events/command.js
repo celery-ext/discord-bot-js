@@ -1,14 +1,16 @@
 const { Commands,Commandregister  } = require('../core/commandload');
+const fs = require('fs');
+const path = require('path');
 const command = new Commands('../commands');
-const serverdata = require('../core/data.json');
 
 function registallguildcommands(){
+    const serverdata = JSON.parse(fs.readFileSync(path.join(__dirname,'../core/data.json'),'utf-8'));
     for (const guildId of Object.keys(serverdata)) {
         new Commandregister(guildId);
     }
 }
 
-registallguildcommands();
+registallguildcommands();   
 
 
 module.exports = (client) => {

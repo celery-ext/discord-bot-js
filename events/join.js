@@ -2,12 +2,18 @@ module.exports = (client) => {
     const { Events } = require('discord.js');
     client.on(Events.GuildCreate, (c) => {
         joinnewguild(c.id);
+        registcommandsforguild(c.id);
         console.log(`${c}に参加しました`);
     });
 };
 
 const fs = require('fs');
 const path =  require('path');
+const { Commandregister } = require('../core/commandload');
+
+function registcommandsforguild(guildid){
+    new Commandregister(guildid);
+}
 
 function joinnewguild(guildid) {
     const serverdata = require('../core/data.json');
