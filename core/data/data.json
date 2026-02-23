@@ -1,0 +1,11 @@
+{
+  "1348654794461548544": {
+    "id": "1348654794461548544",
+    "name": "test 1",
+    "commandconfig": false,
+    "registcommand": {
+      "int": false,
+      "introduction": true
+    }
+  }
+}

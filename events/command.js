@@ -3,14 +3,14 @@ const fs = require('fs');
 const path = require('path');
 const command = new Commands('../commands');
 
-function registallguildcommands(){
-    const serverdata = JSON.parse(fs.readFileSync(path.join(__dirname,'../core/data.json'),'utf-8'));
-    for (const guildId of Object.keys(serverdata)) {
-        new Commandregister(guildId);
-    }
-}
+// function registallguildcommands(){
+//     const serverdata = JSON.parse(fs.readFileSync(path.join(__dirname,'../core/data/data.json'),'utf-8'));
+//     for (const guildId of Object.keys(serverdata)) {
+//         new Commandregister(guildId);
+//     }
+// }
 
-registallguildcommands();   
+// registallguildcommands();   
 
 
 module.exports = (client) => {

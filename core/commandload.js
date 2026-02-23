@@ -1,4 +1,4 @@
-const { REST, Routes } = require('discord.js');
+const { REST, Routes, Guild } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 
@@ -80,9 +80,9 @@ class Commandregister {
         this.#token = Token;
         this.#applicationid = ApplicationId;
         this.#allcommands = new Commands('../commands').getRegistCommands();    //受け取ってるのはjson
-        const serverdata = JSON.parse(fs.readFileSync(path.join(__dirname,'./data.json'),'utf-8'));
+        const serverdata = JSON.parse(fs.readFileSync(path.join(__dirname,'./data/data.json'),'utf-8'));
         this.registercommands(this.commandsfilltering(serverdata));
-        //this.resetregistcommands();
+        this.resetregistcommands();
     }
 
     commandsfilltering(serverdata) { 
