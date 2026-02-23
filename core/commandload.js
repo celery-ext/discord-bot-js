@@ -82,6 +82,7 @@ class Commandregister {
         this.#allcommands = new Commands('../commands').getRegistCommands();    //受け取ってるのはjson
         const serverdata = JSON.parse(fs.readFileSync(path.join(__dirname,'./data.json'),'utf-8'));
         this.registercommands(this.commandsfilltering(serverdata));
+        //this.resetregistcommands();
     }
 
     commandsfilltering(serverdata) { 
@@ -102,12 +103,26 @@ class Commandregister {
             const rest = new REST({ version: '10' }).setToken(this.#token);
             await rest.put(
                 Routes.applicationGuildCommands(this.#applicationid, this.#guildid),
+                { body: [ ] },
+            );
+
+            await rest.put(
+                Routes.applicationGuildCommands(this.#applicationid, this.#guildid),
                 { body: commands },
             );
             console.log('コマンドの登録に成功しました。');
         } catch (error) {
             console.error('コマンドの登録に失敗しました。', error);
         }
+    }
+
+    async resetregistcommands(){
+        const rest = new REST({ version: '10' }).setToken(this.#token);
+
+        await rest.put(
+            Routes.applicationCommands(this.#applicationid),
+            { body: [] }
+        );
     }
 }
 module.exports = { Command, Commands, Commandregister };
