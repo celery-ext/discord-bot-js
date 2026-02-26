@@ -74,27 +74,30 @@ class Commandregister {
     #guildid
     #token
     #applicationid
-    #allcommands
     constructor(Guildid) {
         this.#guildid = Guildid;
         this.#token = Token;
         this.#applicationid = ApplicationId;
-        this.#allcommands = new Commands('../commands').getRegistCommands();    //受け取ってるのはjson
-        const serverdata = JSON.parse(fs.readFileSync(path.join(__dirname,'./data/data.json'),'utf-8'));
-        this.registercommands(this.commandsfilltering(serverdata));
-        this.resetregistcommands();
+        this.registercommands(this.commandsfilltering());
     }
+    
+    commandsfilltering() {
+        const allcommands = new Commands('../commands').getRegistCommands();    //受け取ってるのはjson
+        const serverdata = JSON.parse(fs.readFileSync(path.join(__dirname,'./data/data.json'),'utf-8'));
 
-    commandsfilltering(serverdata) { 
-        if (!serverdata[this.#guildid]||serverdata[this.#guildid].commandconfig == false) return this.#allcommands;
+        if (!serverdata[this.#guildid]||serverdata[this.#guildid].commandconfig == false)
+            return allcommands;
+
+        //これ以降サーバーデータのコマンドのtrue or falseを検証するコードを書く必要ある
         const serverconfig = serverdata[this.#guildid].commands;
         const setcommands = []; 
-        for(const cmd of this.#allcommands){
+        for(const cmd of allcommands){
             if(serverconfig.includes(cmd.name)){
                 setcommands.push(cmd)
             }
         }
-        if(setcommands.length === 0) return this.#allcommands;
+        
+        if(setcommands.length === 0) return allcommands;
         return setcommands;
     }
 

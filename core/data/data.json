@@ -3,9 +3,30 @@
     "id": "1348654794461548544",
     "name": "test 1",
     "commandconfig": false,
-    "registcommand": {
-      "int": false,
-      "introduction": true
-    }
+    "registcommand": [
+      {
+        "name": "int",
+        "enabled": false
+      },
+      {
+        "name": "introduction",
+        "enabled": true
+      }
+    ]
+  },
+  "1473350518544924862": {
+    "id": "1473350518544924862",
+    "name": "test 2",
+    "commandconfig": false,
+    "registcommand": [
+      {
+        "name": "int",
+        "enabled": false
+      },
+      {
+        "name": "introduction",
+        "enabled": true
+      }
+    ]
   }
 }

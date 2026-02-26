@@ -47,7 +47,14 @@ class GuildManager{
 }
 
 class GuildData{
-    constructor(guild){
+    constructor(){
+        this.obj;
+    }
+    get Obj(){
+        return this.obj
+    }
+
+    set Obj(guild){
         this.obj = {
             "id": guild.id,
             "name": guild.name,
@@ -57,14 +64,21 @@ class GuildData{
     }
 
     getCommandSet(){
-        const CommandSet = {};
+        const commandSet = [];
         const commands = new Commands('../commands');
         const RegistCommands = commands.getRegistCommands();
         for(let command of RegistCommands){
-            CommandSet[String(command.name)] = false;
+            let commandDic = {};
+            commandDic["name"] = String(command.name);
+            if(command.name == "introduction"){
+                commandDic["enabled"] = true;
+            }
+            else{
+                commandDic["enabled"] = false;
+            }
+            commandSet.push(commandDic);
         }
-        CommandSet["introduction"] = true
-        return CommandSet;
+        return commandSet;
     }
 }
 
