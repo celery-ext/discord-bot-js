@@ -1,4 +1,4 @@
-const { Commands,Commandregister  } = require('../core/commandload');
+const { Commands,Commandregister  } = require('../core/command');
 const fs = require('fs');
 const path = require('path');
 const command = new Commands('../commands');

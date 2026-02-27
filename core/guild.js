@@ -2,19 +2,14 @@ const fs = require('fs');
 const path = require('path');
 const { json } = require('stream/consumers');
 const command = require('../events/command');
-const { Commands } = require('./commandload');
+const { Commands } = require('./command');
 
 class GuildManager{
-    static GetGuildData(){
-        const guildList = this.client.guilds.cache.map(guild => ({
+    static GetGuildData(client){
+        return client.guilds.cache.map(guild => ({
             name: guild.name,
             id: guild.id
         }));
-        for(guild of guildList){
-            console.log(guild);
-            let obj = new GuildData(duild);
-        }
-        console.log(guildList);
     }
 
     static SetGuildData(guild){
@@ -24,7 +19,8 @@ class GuildManager{
                 'utf-8')
         );
         
-        serverdata[guild.id] = new GuildData(guild).obj;
+        const guildobj = new GuildData(guild);
+        serverdata[guild.id] = guildobj.guilddata();
 
         fs.writeFileSync(
             path.resolve(__dirname,'./data','data.json'),
@@ -36,7 +32,8 @@ class GuildManager{
     static FormatGuildData(guildlist){
         const serverdata = {};
         for(let guild of guildlist){
-            serverdata[guild.id] = new GuildData(guild).obj;
+            const guildobj = new GuildData(guild);
+            serverdata[guild.id] = guildobj.guilddata();
         }
         fs.writeFileSync(
             path.resolve(__dirname,'./data','data.json'),
@@ -47,23 +44,27 @@ class GuildManager{
 }
 
 class GuildData{
-    constructor(){
-        this.obj;
-    }
-    get Obj(){
-        return this.obj
+    #obj
+    constructor(guild){
+        this.#obj = this.#criateobj(guild);
     }
 
-    set Obj(guild){
-        this.obj = {
-            "id": guild.id,
-            "name": guild.name,
-            "commandconfig": false,
-            "registcommand": this.getCommandSet()
+    guilddata(){
+        return this.#obj
+    }
+
+    #criateobj(guild){
+        console.log("guild")
+        console.log(guild);
+        return {
+            id: guild.id,
+            name: guild.name,
+            commandconfig: false,
+            registcommand: this.#getCommandSet()
         };
     }
 
-    getCommandSet(){
+    #getCommandSet(){
         const commandSet = [];
         const commands = new Commands('../commands');
         const RegistCommands = commands.getRegistCommands();

@@ -5,6 +5,7 @@ const { Token } = require('./core/config');
 require('./events/join')(client);
 require('./events/command')(client);
 require('./events/ready')(client);
+require('./events/test')(client);
 
 // login
 client.login(Token);
