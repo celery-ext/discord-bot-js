@@ -1,12 +1,80 @@
-const { REST, Routes, Guild } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
+const { REST, Routes, Guild } = require('discord.js');
 
-class Command {
+class CommandManager{
+    #readCommands
+    #registCommands
+    #loadCommands
+    constructor() {
+        const commandsDir = path.resolve(__dirname, '../commands'); // 絶対パス化
+        const commandFiles = fs.readdirSync(commandsDir).filter(file => file.endsWith('.js'));
+        this.#readCommands = this.#builtreadcommands(commandsDir, commandFiles);
+        this.#registCommands = this.#criateregistcommands(this.#readCommands)
+        this.#loadCommands = this.#criateloadcommands(this.#readCommands)
+    }
+
+    #builtreadcommands(commandsDir, commandFiles) {
+        const commands = [];
+        for (const file of commandFiles) {
+            const command = require(path.join(commandsDir, file));
+            if (!this.#checkformat(command, file)) continue;
+            commands.push(command);
+        }
+        return commands
+    }
+    
+    #checkformat(command, file) {
+        if (!command || !command.data || !command.execute) {
+            console.warn(`[警告] ${file} は正しい形式ではありません。スキップします。`);
+            return false;
+        }
+        return true
+    }
+
+    getRegistCommands() {
+        return this.#registCommands;    //サーバー登録用
+    }
+    getLoadCommands() {
+        return this.#loadCommands;      //bot登録用
+    }
+    
+    #criateregistcommands(commands){
+        return commands.map(command => command.data.toJSON());
+    }
+
+    #criateloadcommands(commands){
+        const commandarray = new Map();
+        for (const command of commands) {
+            commandarray.set(command.data.name, command);
+        }
+        this.#loadcommandslog(commandarray);
+        return commandarray    //bot登録用   
+    }
+
+    #loadcommandslog(commands) {
+        console.log('読み込んだコマンド:');
+        for (const [name, cmd] of commands) {
+            console.log(`- ${name}`);
+        }
+    }
+}
+
+class CommandData {
+    #obj
     constructor(item) {
-        this.commandName = item.data.name;
-        this.enable = true;
-        this.command = item;
+        this.#obj = this.#criateobj(item);
+    }
+
+    commanddata(){
+        return this.#obj;
+    }
+
+    #criateobj(item){
+        return {
+            name:item.name,
+            enabled:item.enabled,
+        };
     }
 }
 
@@ -128,4 +196,4 @@ class Commandregister {
         );
     }
 }
-module.exports = { Command, Commands, Commandregister };
+module.exports = { Commands, Commandregister, CommandManager };

@@ -1,8 +1,3 @@
-const { Commands,Commandregister  } = require('../core/command');
-const fs = require('fs');
-const path = require('path');
-const command = new Commands('../commands');
-
 // function registallguildcommands(){
 //     const serverdata = JSON.parse(fs.readFileSync(path.join(__dirname,'../core/data/data.json'),'utf-8'));
 //     for (const guildId of Object.keys(serverdata)) {
@@ -12,12 +7,13 @@ const command = new Commands('../commands');
 
 // registallguildcommands();   
 
-
 module.exports = (client) => {
     const { Events } = require('discord.js');
+    const { CommandManager  } = require('../core/command');
+
     client.once(Events.InteractionCreate, async interaction => {
         if (!interaction.isCommand()) return;
-
+        const command = new CommandManager();
         const callcommand = command.getLoadCommands().get(interaction.commandName);  // mapの方が欲しい
         if (!callcommand) return;
 

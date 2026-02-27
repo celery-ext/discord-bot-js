@@ -1,8 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { json } = require('stream/consumers');
-const command = require('../events/command');
-const { Commands } = require('./command');
+const { Commands, CommandManager } = require('./command');
 
 class GuildManager{
     static GetGuildData(client){
@@ -13,33 +11,23 @@ class GuildManager{
     }
 
     static SetGuildData(guild){
-        const serverdata = JSON.parse(
-            fs.readFileSync(
-                path.join(__dirname,'./data/data.json'),
-                'utf-8')
-        );
-        
+        const serverdata = JSON.parse(fs.readFileSync(path.join(__dirname,'./data/data.json'),'utf-8'));
+
         const guildobj = new GuildData(guild);
         serverdata[guild.id] = guildobj.guilddata();
 
-        fs.writeFileSync(
-            path.resolve(__dirname,'./data','data.json'),
-            JSON.stringify(serverdata, null, '  '),
-            'utf-8'
-        );
+        fs.writeFileSync(path.resolve(__dirname,'./data','data.json'),JSON.stringify(serverdata, null, '  '),'utf-8');
     }
 
     static FormatGuildData(guildlist){
         const serverdata = {};
+        
         for(let guild of guildlist){
             const guildobj = new GuildData(guild);
             serverdata[guild.id] = guildobj.guilddata();
         }
-        fs.writeFileSync(
-            path.resolve(__dirname,'./data','data.json'),
-            JSON.stringify(serverdata, null, '  '),
-            'utf-8'
-        );
+
+        fs.writeFileSync(path.resolve(__dirname,'./data','data.json'),JSON.stringify(serverdata, null, '  '),'utf-8');
     }
 }
 
@@ -54,8 +42,6 @@ class GuildData{
     }
 
     #criateobj(guild){
-        console.log("guild")
-        console.log(guild);
         return {
             id: guild.id,
             name: guild.name,
@@ -66,7 +52,7 @@ class GuildData{
 
     #getCommandSet(){
         const commandSet = [];
-        const commands = new Commands('../commands');
+        const commands = new CommandManager();
         const RegistCommands = commands.getRegistCommands();
         for(let command of RegistCommands){
             let commandDic = {};
