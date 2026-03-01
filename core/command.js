@@ -1,20 +1,24 @@
 const fs = require('fs');
 const path = require('path');
 const { REST, Routes, Guild } = require('discord.js');
+const { Token, ApplicationId } = require('./config');
 
-class CommandManager{
+class CommandsBuilder{
     #readCommands
     #registCommands
     #loadCommands
-    constructor() {
-        const commandsDir = path.resolve(__dirname, '../commands'); // 絶対パス化
+    #commandspath
+    constructor(defaultmode = false) {
+        if(defaultmode) this.#commandspath = '../commands/serverdefault';
+        if(!defaultmode) this.#commandspath = '../commands';
+        const commandsDir = path.resolve(__dirname, this.#commandspath); // 絶対パス化
         const commandFiles = fs.readdirSync(commandsDir).filter(file => file.endsWith('.js'));
-        this.#readCommands = this.#builtreadcommands(commandsDir, commandFiles);
-        this.#registCommands = this.#criateregistcommands(this.#readCommands)
-        this.#loadCommands = this.#criateloadcommands(this.#readCommands)
+        this.#readCommands = this.#buildreadcommands(commandsDir, commandFiles);
+        this.#registCommands = this.#createregistcommands(this.#readCommands)
+        this.#loadCommands = this.#createloadcommands(this.#readCommands)
     }
 
-    #builtreadcommands(commandsDir, commandFiles) {
+    #buildreadcommands(commandsDir, commandFiles) {
         const commands = [];
         for (const file of commandFiles) {
             const command = require(path.join(commandsDir, file));
@@ -39,11 +43,11 @@ class CommandManager{
         return this.#loadCommands;      //bot登録用
     }
     
-    #criateregistcommands(commands){
+    #createregistcommands(commands){
         return commands.map(command => command.data.toJSON());
     }
 
-    #criateloadcommands(commands){
+    #createloadcommands(commands){
         const commandarray = new Map();
         for (const command of commands) {
             commandarray.set(command.data.name, command);
@@ -60,84 +64,6 @@ class CommandManager{
     }
 }
 
-class CommandData {
-    #obj
-    constructor(item) {
-        this.#obj = this.#criateobj(item);
-    }
-
-    commanddata(){
-        return this.#obj;
-    }
-
-    #criateobj(item){
-        return {
-            name:item.name,
-            enabled:item.enabled,
-        };
-    }
-}
-
-class Commands {
-    #readCommands
-    #registCommands
-    #loadCommands
-    constructor(directorypath) {
-        const commandsDir = path.resolve(__dirname, directorypath); // 絶対パス化
-        const commandFiles = fs.readdirSync(commandsDir).filter(file => file.endsWith('.js'));
-        this.#readCommands = this.builtreadcommands(commandsDir, commandFiles);
-        this.#registCommands = this.builtregistcommands(this.#readCommands);    //サーバー登録用
-        this.#loadCommands = this.builtloadcommands(this.#readCommands);    //bot登録用
-    }
-
-    builtreadcommands(commandsDir, commandFiles) {
-        const commands = [];
-        for (const file of commandFiles) {
-            const command = require(path.join(commandsDir, file));
-            if (!this.checkfiledata(command, file)) continue;
-            commands.push(command);
-        }
-        return commands
-    }
-
-    builtregistcommands(commands) {
-        return commands.map(command => command.data.toJSON())
-    }
-
-    builtloadcommands(commands) {
-        const commandarray = new Map();
-        for (const command of commands) {
-            commandarray.set(command.data.name, command);
-        }
-        this.loadcommandslog(commandarray);
-        return commandarray
-    }
-
-    checkfiledata(command, file) {
-        if (!command || !command.data || !command.execute) {
-            console.warn(`[警告] ${file} は正しい形式ではありません。スキップします。`);
-            return false;
-        }
-        return true
-    }
-
-    loadcommandslog(commands) {
-        console.log('読み込んだコマンド:');
-        for (const [name, cmd] of commands) {
-            console.log(`- ${name}`);
-        }
-    }
-
-    getRegistCommands() {
-        return this.#registCommands;    //サーバー登録用
-    }
-    getLoadCommands() {
-        return this.#loadCommands;      //bot登録用
-    }
-}
-
-const { Token, ApplicationId } = require('./config');
-
 class Commandregister {
     #guildid
     #token
@@ -146,54 +72,56 @@ class Commandregister {
         this.#guildid = Guildid;
         this.#token = Token;
         this.#applicationid = ApplicationId;
-        this.registercommands(this.commandsfilltering());
+        this.#createcommands();
+    }
+
+    #createcommands(){
+        return this.#registercommands(this.#commandsfilltering());
     }
     
-    commandsfilltering() {
-        const allcommands = new Commands('../commands').getRegistCommands();    //受け取ってるのはjson
+    #commandsfilltering() {
+        const allcommands = new CommandsBuilder().getRegistCommands();    //受け取ってるのはjson
         const serverdata = JSON.parse(fs.readFileSync(path.join(__dirname,'./data/data.json'),'utf-8'));
 
         if (!serverdata[this.#guildid]||serverdata[this.#guildid].commandconfig == false)
-            return allcommands;
+            return new CommandsBuilder(true).getRegistCommands();
 
         //これ以降サーバーデータのコマンドのtrue or falseを検証するコードを書く必要ある
-        const serverconfig = serverdata[this.#guildid].commands;
+        const serverconfig = serverdata[this.#guildid].registcommands;
         const setcommands = []; 
         for(const cmd of allcommands){
             if(serverconfig.includes(cmd.name)){
-                setcommands.push(cmd)
+                setcommands.push(cmd);
             }
         }
         
-        if(setcommands.length === 0) return allcommands;
+        if(setcommands.length === 0) 
+            return new CommandsBuilder(true).getRegistCommands();
+
         return setcommands;
     }
 
-    async registercommands(commands) {
+    async #registercommands(commands) {
         try {
-            const rest = new REST({ version: '10' }).setToken(this.#token);
-            await rest.put(
-                Routes.applicationGuildCommands(this.#applicationid, this.#guildid),
-                { body: [ ] },
-            );
-
-            await rest.put(
-                Routes.applicationGuildCommands(this.#applicationid, this.#guildid),
-                { body: commands },
-            );
+            await this.#resetregistcommands();
+            await this.#registcommands(commands);
             console.log('コマンドの登録に成功しました。');
         } catch (error) {
             console.error('コマンドの登録に失敗しました。', error);
         }
     }
 
-    async resetregistcommands(){
+    async #registcommands(commands){
         const rest = new REST({ version: '10' }).setToken(this.#token);
-
         await rest.put(
-            Routes.applicationCommands(this.#applicationid),
-            { body: [] }
+            Routes.applicationGuildCommands(this.#applicationid, this.#guildid),
+            { body: commands },
         );
     }
+
+    async #resetregistcommands(){
+        await this.#registcommands([]);
+    }
 }
-module.exports = { Commands, Commandregister, CommandManager };
+
+module.exports = { CommandsBuilder, Commandregister};
